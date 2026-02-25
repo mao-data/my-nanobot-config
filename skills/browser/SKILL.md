@@ -2,295 +2,161 @@
 nanobot:
   name: browser
   description: |
-    Use this skill for web browser automation and interaction tasks.
-    Triggers for: opening websites, clicking buttons, filling forms, taking screenshots,
-    scraping web content, automating web workflows, testing websites,
-    extracting data from web pages, logging into websites.
-    Keywords: "open website", "browse", "click", "fill form", "screenshot",
-    "scrape", "extract from page", "automate browser", "web automation".
+    Use this skill for opening websites in the user's real browser.
+    Triggers for: opening websites, browsing URLs, searching on Google,
+    opening YouTube, checking social media, reading articles.
+    Keywords: "open website", "browse", "go to", "open URL", "search",
+    "open in browser", "show me", "look up".
   bins:
-    - npx
+    - open
   env: []
 ---
 
-# Browser Automation Skill
+# Browser Skill
 
-This skill enables browser automation using Playwright. You can open websites, interact with elements, fill forms, take screenshots, and extract content.
+Open websites in the user's real browser (Safari, Chrome, Firefox, etc.) on macOS.
 
-## Prerequisites
+## Basic Usage
 
-First-time setup (installs browser binaries):
+### Open a URL
 ```bash
-npx playwright install chromium
+open "https://example.com"
 ```
 
-## Quick Commands
-
-### Open a URL and Take Screenshot
+### Open with Specific Browser
 ```bash
-npx playwright screenshot --wait-for-timeout 3000 "https://example.com" screenshot.png
+# Safari (default)
+open -a Safari "https://example.com"
+
+# Google Chrome
+open -a "Google Chrome" "https://example.com"
+
+# Firefox
+open -a Firefox "https://example.com"
+
+# Arc
+open -a Arc "https://example.com"
+
+# Brave
+open -a "Brave Browser" "https://example.com"
+
+# Microsoft Edge
+open -a "Microsoft Edge" "https://example.com"
 ```
 
-### Open Browser for Interactive Use
+### Open Multiple URLs
 ```bash
-npx playwright open "https://example.com"
+open "https://google.com" "https://github.com" "https://twitter.com"
 ```
 
-### Generate Code by Recording Actions
+## Common Tasks
+
+### Google Search
 ```bash
-npx playwright codegen "https://example.com"
-```
-This opens a browser and records your actions as code.
-
-## Using Playwright Scripts
-
-For complex automation, create and run JavaScript/TypeScript scripts.
-
-### Basic Script Template
-Create a file `script.js`:
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
-
-  // Navigate to URL
-  await page.goto('https://example.com');
-
-  // Wait for page to load
-  await page.waitForLoadState('networkidle');
-
-  // Your actions here...
-
-  await browser.close();
-})();
+open "https://www.google.com/search?q=your+search+query"
 ```
 
-Run with:
+### YouTube Search
 ```bash
-npx playwright test script.js
-# or
-node script.js
+open "https://www.youtube.com/results?search_query=your+search"
 ```
 
-## Common Operations
-
-### Click an Element
-```javascript
-// By text
-await page.click('text=Submit');
-
-// By CSS selector
-await page.click('#submit-button');
-await page.click('.btn-primary');
-
-// By role
-await page.getByRole('button', { name: 'Submit' }).click();
+### Open GitHub Repository
+```bash
+open "https://github.com/username/repo"
 ```
 
-### Fill a Form
-```javascript
-// Fill input field
-await page.fill('#username', 'myuser');
-await page.fill('#password', 'mypassword');
-
-// Or use locators
-await page.getByLabel('Username').fill('myuser');
-await page.getByPlaceholder('Enter email').fill('test@example.com');
+### Open Twitter/X Profile
+```bash
+open "https://twitter.com/username"
 ```
 
-### Extract Text Content
-```javascript
-// Get text from element
-const text = await page.textContent('.article-content');
-
-// Get all matching elements
-const items = await page.$$eval('.list-item', elements =>
-  elements.map(el => el.textContent)
-);
-
-// Get attribute
-const href = await page.getAttribute('a.link', 'href');
+### Open Google Maps Location
+```bash
+open "https://www.google.com/maps/search/taipei+101"
 ```
 
-### Take Screenshots
-```javascript
-// Full page
-await page.screenshot({ path: 'full.png', fullPage: true });
-
-// Specific element
-await page.locator('#chart').screenshot({ path: 'chart.png' });
+### Open Gmail
+```bash
+open "https://mail.google.com"
 ```
 
-### Wait for Elements
-```javascript
-// Wait for element to appear
-await page.waitForSelector('.loaded-content');
-
-// Wait for navigation
-await page.waitForURL('**/dashboard');
-
-// Wait for network idle
-await page.waitForLoadState('networkidle');
+### Open Google Drive
+```bash
+open "https://drive.google.com"
 ```
 
-### Handle Popups and Dialogs
-```javascript
-// Accept dialog
-page.on('dialog', dialog => dialog.accept());
-
-// Handle new tab/popup
-const [popup] = await Promise.all([
-  page.waitForEvent('popup'),
-  page.click('a[target="_blank"]')
-]);
-await popup.waitForLoadState();
+### Open ChatGPT
+```bash
+open "https://chat.openai.com"
 ```
 
-## Example: Login and Extract Data
-
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-
-  // Go to login page
-  await page.goto('https://example.com/login');
-
-  // Fill login form
-  await page.fill('#email', 'user@example.com');
-  await page.fill('#password', 'password123');
-  await page.click('button[type="submit"]');
-
-  // Wait for dashboard
-  await page.waitForURL('**/dashboard');
-
-  // Extract data
-  const userName = await page.textContent('.user-name');
-  const notifications = await page.$$eval('.notification', els =>
-    els.map(el => el.textContent)
-  );
-
-  console.log('User:', userName);
-  console.log('Notifications:', notifications);
-
-  // Take screenshot
-  await page.screenshot({ path: 'dashboard.png' });
-
-  await browser.close();
-})();
+### Open Claude
+```bash
+open "https://claude.ai"
 ```
 
-## Example: Scrape a List of Items
+## URL Encoding
 
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-
-  await page.goto('https://news.ycombinator.com');
-
-  // Extract all story titles and links
-  const stories = await page.$$eval('.titleline > a', links =>
-    links.map(link => ({
-      title: link.textContent,
-      url: link.href
-    }))
-  );
-
-  console.log(JSON.stringify(stories, null, 2));
-
-  await browser.close();
-})();
-```
-
-## Example: Fill and Submit a Form
-
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
-
-  await page.goto('https://example.com/contact');
-
-  // Fill form fields
-  await page.getByLabel('Name').fill('John Doe');
-  await page.getByLabel('Email').fill('john@example.com');
-  await page.getByLabel('Message').fill('Hello, this is a test message.');
-
-  // Select dropdown
-  await page.selectOption('#subject', 'support');
-
-  // Check checkbox
-  await page.check('#agree-terms');
-
-  // Submit
-  await page.click('button[type="submit"]');
-
-  // Wait for confirmation
-  await page.waitForSelector('.success-message');
-
-  console.log('Form submitted successfully!');
-
-  await browser.close();
-})();
-```
-
-## Running in Tmux (Long Tasks)
-
-For browser automation that takes time:
+For search queries with special characters, encode them:
 
 ```bash
-# Set socket directory
-export NANOBOT_TMUX_SOCKET_DIR="${NANOBOT_TMUX_SOCKET_DIR:-/tmp/nanobot-tmux-sockets}"
-mkdir -p "$NANOBOT_TMUX_SOCKET_DIR"
-
-# Create session
-tmux -L nanobot -S "$NANOBOT_TMUX_SOCKET_DIR/browser.sock" new-session -d -s browser-task
-
-# Run script
-tmux -L nanobot -S "$NANOBOT_TMUX_SOCKET_DIR/browser.sock" send-keys -t browser-task "node /path/to/script.js" Enter
-
-# Check output
-tmux -L nanobot -S "$NANOBOT_TMUX_SOCKET_DIR/browser.sock" capture-pane -t browser-task -p -S -100
+# Using Python for URL encoding
+open "https://www.google.com/search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('你好世界'))")"
 ```
 
-## Tips
-
-1. **Use headless mode for automation**: `chromium.launch({ headless: true })`
-2. **Use headed mode for debugging**: `chromium.launch({ headless: false })`
-3. **Add slowMo for debugging**: `chromium.launch({ slowMo: 500 })`
-4. **Always wait for elements** before interacting
-5. **Handle errors gracefully** with try/catch blocks
-6. **Close browser** when done to free resources
-
-## Troubleshooting
-
-### Browser not installed
+Or use `+` for spaces:
 ```bash
-npx playwright install chromium
+open "https://www.google.com/search?q=hello+world"
 ```
 
-### Element not found
-- Wait for element: `await page.waitForSelector('.element')`
-- Check if inside iframe: `const frame = page.frameLocator('iframe')`
-- Use more specific selector
+## Examples
 
-### Timeout errors
-Increase timeout:
-```javascript
-await page.click('button', { timeout: 30000 });
+### Search Google for "weather in Tokyo"
+```bash
+open "https://www.google.com/search?q=weather+in+tokyo"
 ```
 
-### Page not loading
-Wait for network:
-```javascript
-await page.waitForLoadState('networkidle');
+### Open YouTube video
+```bash
+open "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
+
+### Search Amazon
+```bash
+open "https://www.amazon.com/s?k=wireless+headphones"
+```
+
+### Open Wikipedia article
+```bash
+open "https://en.wikipedia.org/wiki/Artificial_intelligence"
+```
+
+### Check flight status
+```bash
+open "https://www.google.com/search?q=BR+123+flight+status"
+```
+
+### Open Hacker News
+```bash
+open "https://news.ycombinator.com"
+```
+
+### Open Reddit subreddit
+```bash
+open "https://www.reddit.com/r/programming"
+```
+
+## Checking Available Browsers
+
+List installed browsers:
+```bash
+ls /Applications | grep -iE "(safari|chrome|firefox|brave|arc|edge|opera)"
+```
+
+## Notes
+
+1. The `open` command uses the system default browser unless `-a` is specified
+2. URLs should be quoted to handle special characters
+3. The browser opens in a new tab if already running
+4. This opens the REAL browser with full functionality (login sessions, extensions, etc.)
